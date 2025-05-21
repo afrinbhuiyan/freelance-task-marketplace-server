@@ -26,15 +26,10 @@ async function run() {
     const tasksCollection = client.db("tasksDB").collection("tasks");
 
     app.get("/tasks", async (req, res) => {
-      const result = await tasksCollection.find().toArray();
-      res.send(result);
-    });
-
-    app.get("/task/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await tasksCollection.findOne(query);
-      res.send(result);
+      const email = req.query.email;
+      const query = email ? { email } : {};
+      const tasks = await tasksCollection.find(query).toArray();
+      res.send(tasks);
     });
 
     app.get("/tasks/featured", async (req, res) => {
@@ -46,23 +41,39 @@ async function run() {
       res.send(tasks);
     });
 
+    app.get("/tasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const task = await tasksCollection.findOne({ _id: new ObjectId(id) });
+      res.send(task);
+    });
+
     app.post("/tasks", async (req, res) => {
       const newTask = req.body;
+      if (!newTask.email) {
+        return res.status(400).send({ message: "Email is required." });
+      }
       const result = await tasksCollection.insertOne(newTask);
+      res.send(result);
+    });
+
+    app.put("/tasks/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedTask = req.body;
+      const result = await tasksCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedTask }
+      );
       res.send(result);
     });
 
     app.delete("/tasks/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await tasksCollection.deleteOne(query);
+      const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("Connected to MongoDB");
   } finally {
     // await client.close();
   }
@@ -74,5 +85,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Freelance Task Marketplace Server is running on port, ${port}`);
+  console.log(`Server running on port ${port}`);
 });
