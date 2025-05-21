@@ -37,6 +37,15 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/tasks/featured", async (req, res) => {
+      const tasks = await tasksCollection
+        .find({})
+        .sort({ deadline: 1 })
+        .limit(6)
+        .toArray();
+      res.send(tasks);
+    });
+
     app.post("/tasks", async (req, res) => {
       const newTask = req.body;
       const result = await tasksCollection.insertOne(newTask);
