@@ -24,6 +24,7 @@ async function run() {
     await client.connect();
 
     const tasksCollection = client.db("tasksDB").collection("tasks");
+    const bidsCollection = client.db("tasksDB").collection("bids");
 
     app.get("/tasks", async (req, res) => {
       const email = req.query.email;
@@ -69,6 +70,19 @@ async function run() {
     app.delete("/tasks/:id", async (req, res) => {
       const id = req.params.id;
       const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+
+    app.get("/bids", async (req, res) => {
+      const { taskId } = req.query;
+      const result = await bidsCollection.find({ taskId }).toArray();
+      res.send(result);
+    });
+
+    app.post("/bids", async (req, res) => {
+      const bid = req.body;
+      const result = await bidsCollection.insertOne(bid);
       res.send(result);
     });
 
