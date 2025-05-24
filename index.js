@@ -7,13 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(
-  cors({
-    origin: ["https://fantastic-lamington-a703b7.netlify.app"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json());
 
 // MongoDB setup with cached connection
