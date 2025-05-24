@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
     // Send a ping to confirm a successful connection
     const tasksCollection = client.db("tasksDB").collection("tasks");
+    const bidsCollection = client.db("tasksDB").collection("bids");
 
     app.get("/tasks", async (req, res) => {
       const email = req.query.email;
