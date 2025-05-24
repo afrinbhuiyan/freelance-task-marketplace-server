@@ -33,6 +33,21 @@ async function run() {
       res.send(tasks);
     });
 
+    app.get("/tasks", async (req, res) => {
+      const email = req.query.email;
+
+      console.log(email)
+
+      if (email) {
+        const tasks = await tasksCollection
+          .find({ userEmail: email })
+          .toArray();
+        return res.send(tasks);
+      }
+      const tasks = await tasksCollection.find().toArray();
+      res.send(tasks);
+    });
+
     app.get("/tasks/featured", async (req, res) => {
       const tasks = await tasksCollection
         .find({})
@@ -49,12 +64,13 @@ async function run() {
     });
 
     app.post("/tasks", async (req, res) => {
-      const newTask = req.body;
-      if (!newTask.email) {
-        return res.status(400).send({ message: "Email is required." });
+      try {
+        const newTask = req.body;
+        const result = await tasksCollection.insertOne(newTask);
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ error: "Failed to insert task" });
       }
-      const result = await tasksCollection.insertOne(newTask);
-      res.send(result);
     });
 
     app.put("/tasks/:id", async (req, res) => {
@@ -72,7 +88,6 @@ async function run() {
       const result = await tasksCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
-
 
     app.get("/bids", async (req, res) => {
       const { taskId } = req.query;
